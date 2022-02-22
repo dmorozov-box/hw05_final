@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+  {% load static %}
+  <h1>Привет, я Дмитрий</h1>
+
+  <br />
+  <div class="container">
+    <div class="row">
+      <div class="col-sm">
+        <div class="card" style="width: 20rem;">
+          <img src="{% static 'img/MyPhoto.png' %}" class="card-img-top" alt="...">
+          <div class="card-body">
+            <h5 class="card-title">Это я</h5>
+            <p class="card-text">На даной странице решил сделать расписание текущего курса Практикума</p>
+          </div>
+        </div>
+      </div>
+  </div>
+  <br />
+  <h5>Курс Возможности Бэкенда (SQL, OOП, Django) — c 30.11 по 27.02 (12 недель + неделя новогодних праздников)</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Спринт. Содержание</th>
+        <th scope="col">Начало</th>
+        <th scope="col">Окончание</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">1. SQL</th>
+        <td>30.11.2021</td>
+        <td>12.12.2021</td>
+      </tr>
+      <tr>
+        <th scope="row">2. ООП. Настройка окружения. Финальный проект: модуль фитнес-трекера</th>
+        <td>13.12.2021</td>
+        <td>26.12.2021</td>
+      </tr>
+      <tr>
+        <th scope="row">3. Django: создаём проект. Проект спринта: сообщества</th>
+        <td>27.12.2021</td>
+        <td>16.01.2022</td>
+      </tr>
+      <tr>
+        <th scope="row">4. Django ORM. Управление пользователями. Формы. Декораторы. Контекст процессоры.
+          Paginator. Проект спринта: новые записи
+        </th>
+        <td>17.01.2021</td>
+        <td>30.01.2022</td>
+      </tr>
+      <tr>
+        <th scope="row">5. Тестирование. Тестирование Django. Проект спринта: покрытие тестами</th>
+        <td>31.01.2021</td>
+        <td>13.02.2022</td>
+      </tr>
+      <tr>
+        <th scope="row">6. Итоговый проект. Подписки на авторов. Бонус</th>
+        <td>14.02.2021</td>
+        <td><span style="color:red; font-weight: bold">27.02.2022 *</span></td>
+      </tr>
+    </tbody>
+  </table>
+  * Первый жесткий дедлайн — 27.02
+  <p>
+    <figure>
+      <blockquote class="blockquote">
+        <p>Любой тайм-менеджмент начинается с планирования.</p>
+      </blockquote>
+      <figcaption class="blockquote-footer">
+        <cite title="Source Title">Том Грининг</cite>
+      </figcaption>
+    </figure>
+  </p>
+{% endblock %}

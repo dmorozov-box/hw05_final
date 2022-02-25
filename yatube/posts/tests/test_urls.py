@@ -2,8 +2,7 @@ from http import HTTPStatus
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
-from django.urls import reverse
-from ..models import Follow, Group, Post
+from ..models import Group, Post
 
 
 User = get_user_model()
@@ -88,29 +87,3 @@ class URLTests(TestCase):
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
                 self.assertTemplateUsed(response, template)
-
-    def test_follow_unfollow(self):
-        followed_user = User.objects.create_user(username='follower')
-        followed_client = Client()
-        followed_client.force_login(followed_user)
-
-        self.assertEqual(Follow.objects.count(), 0)
-
-        response = followed_client.post(
-            reverse('posts:profile_follow', kwargs={'username': self.user}),
-        )
-        self.assertRedirects(
-            response,
-            reverse('posts:profile', kwargs={'username': self.user})
-        )
-        self.assertEqual(Follow.objects.last().user, followed_user)
-        self.assertEqual(Follow.objects.last().author, self.user)
-
-        response = followed_client.post(
-            reverse('posts:profile_unfollow', kwargs={'username': self.user}),
-        )
-        self.assertRedirects(
-            response,
-            reverse('posts:profile', kwargs={'username': self.user})
-        )
-        self.assertEqual(Follow.objects.count(), 0)

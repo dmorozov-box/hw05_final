@@ -123,6 +123,7 @@ class ViewTests(TestCase):
             response.context.get('title'),
             'Последние обновления на сайте'
         )
+        self.assertEqual(response.context.get('index'), True)
         self.post_obj_test_correct_context(response.context.get('page_obj')[0])
 
     def test_group_show_correct_context(self):
@@ -251,6 +252,32 @@ class CacheTests(TestCase):
         cache.clear()
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertNotEqual(response.content, cache_check)
+
+    def test_follow_unfollow(self):
+        followed_user = User.objects.create_user(username='follower')
+        followed_client = Client()
+        followed_client.force_login(followed_user)
+
+        self.assertEqual(Follow.objects.count(), 0)
+
+        response = followed_client.post(
+            reverse('posts:profile_follow', kwargs={'username': self.user}),
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:profile', kwargs={'username': self.user})
+        )
+        self.assertEqual(Follow.objects.last().user, followed_user)
+        self.assertEqual(Follow.objects.last().author, self.user)
+
+        response = followed_client.post(
+            reverse('posts:profile_unfollow', kwargs={'username': self.user}),
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:profile', kwargs={'username': self.user})
+        )
+        self.assertEqual(Follow.objects.count(), 0)
 
 
 class PaginatorViewsTest(TestCase):

@@ -59,6 +59,8 @@ class FormTests(TestCase):
 
     def test_post_create_form(self):
 
+        IMAGE_NAME = 'small.gif'
+
         post_count_before = Post.objects.count()
 
         small_gif = (
@@ -70,7 +72,7 @@ class FormTests(TestCase):
             b'\x0A\x00\x3B'
         )
         uploaded = SimpleUploadedFile(
-            name='small.gif',
+            name=IMAGE_NAME,
             content=small_gif,
             content_type='image/gif'
         )
@@ -96,6 +98,7 @@ class FormTests(TestCase):
         self.assertEqual(post.text, self.ADDED_POST_TEXT)
         self.assertEqual(post.group, self.group)
         self.assertEqual(post.author, self.user)
+        self.assertEqual(post.image, f'posts/{IMAGE_NAME}')
 
     def test_post_edit_form(self):
         post_count_before = Post.objects.count()
@@ -111,6 +114,10 @@ class FormTests(TestCase):
             follow=True
         )
 
+        self.assertRedirects(response, reverse(
+            'posts:post_detail', kwargs={'post_id': self.post_id}
+        ))
+
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
         self.assertEqual(Post.objects.count(), post_count_before)
@@ -120,10 +127,13 @@ class FormTests(TestCase):
         self.assertEqual(post.group, self.group_2)
 
     def test_create_comment(self):
+
+        COMMENT_TEXT = 'Тестовый комментарий'
+
         comment_count_before = Comment.objects.count()
 
         form_data = {
-            'text': 'Тестовый комментарий',
+            'text': COMMENT_TEXT,
         }
 
         response = self.authorized_client.post(
@@ -140,7 +150,7 @@ class FormTests(TestCase):
         self.assertEqual(Comment.objects.count(), comment_count_before + 1)
 
         comment = Comment.objects.order_by("id").last()
-        self.assertTrue(comment.text, 'Тестовый комментарий')
+        self.assertTrue(comment.text, COMMENT_TEXT)
 
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post_id})

@@ -1,21 +1,22 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import redirect, render, get_object_or_404
-from .models import Post, Group, User, Follow
-from .forms import PostForm, CommentForm
 
-MAX_POSTS = 10
+from .forms import PostForm, CommentForm
+from .models import Post, Group, User, Follow
 
 
 def index(request):
     posts = Post.objects.select_related('author', 'group')
-    paginator = Paginator(posts, MAX_POSTS)
+    paginator = Paginator(posts, settings.MAX_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
         'page_obj': page_obj,
         'title': 'Последние обновления на сайте',
+        'index': True,
     }
     return render(request, 'posts/index.html', context)
 
@@ -24,7 +25,7 @@ def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.select_related('author')
 
-    paginator = Paginator(posts, MAX_POSTS)
+    paginator = Paginator(posts, settings.MAX_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -41,14 +42,13 @@ def profile(request, username):
     posts = author.posts.select_related('group')
     author_posts_count = posts.count()
 
-    paginator = Paginator(posts, MAX_POSTS)
+    paginator = Paginator(posts, settings.MAX_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     following = False
     if request.user.is_authenticated:
-        if author.following.filter(user=request.user).count():
-            following = True
+        following = author.following.filter(user=request.user).exists()
 
     context = {
         'page_obj': page_obj,
@@ -136,12 +136,13 @@ def add_comment(request, post_id):
 def follow_index(request):
     posts = Post.objects.filter(author__following__user=request.user)
 
-    paginator = Paginator(posts, MAX_POSTS)
+    paginator = Paginator(posts, settings.MAX_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
         'page_obj': page_obj,
         'title': 'Последние обновления на сайте - подписки',
+        'follow': True,
     }
     return render(request, 'posts/follow.html', context)
 
@@ -157,5 +158,6 @@ def profile_follow(request, username):
 @login_required
 def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
-    Follow.objects.filter(user=request.user, author=author).delete()
+    if Follow.objects.filter(user=request.user, author=author).exists:
+        Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username=username)

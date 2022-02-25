@@ -151,3 +151,5 @@ CACHES = {
         'TIMEOUT': 20,
     }
 }
+
+MAX_POSTS = 10

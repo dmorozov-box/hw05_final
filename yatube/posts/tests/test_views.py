@@ -209,6 +209,47 @@ class ViewTests(TestCase):
         follower_posts_count = len(response.context['page_obj'])
         self.assertEqual(follower_posts_count, 0)
 
+    def test_follow(self):
+        followed_user = User.objects.create_user(username='follow_user')
+        followed_client = Client()
+        followed_client.force_login(followed_user)
+
+        follow_count = Follow.objects.count()
+
+        response = followed_client.post(
+            reverse('posts:profile_follow', kwargs={'username': self.user}),
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:profile', kwargs={'username': self.user})
+        )
+        self.assertEqual(Follow.objects.count(), follow_count + 1)
+        self.assertEqual(Follow.objects.last().user, followed_user)
+        self.assertEqual(Follow.objects.last().author, self.user)
+
+    def test_unfollow(self):
+        followed_user = User.objects.create_user(username='unfollow_user')
+        followed_client = Client()
+        followed_client.force_login(followed_user)
+
+        follow = Follow.objects.create(
+            user=followed_user,
+            author=self.user,
+        )
+        follow_id = follow.id
+        follow_count = Follow.objects.count()
+
+        response = followed_client.post(
+            reverse('posts:profile_unfollow', kwargs={'username': self.user}),
+        )
+        self.assertRedirects(
+            response,
+            reverse('posts:profile', kwargs={'username': self.user})
+        )
+
+        self.assertEqual(Follow.objects.count(), follow_count - 1)
+        self.assertFalse(Follow.objects.filter(pk=follow_id).exists())
+
 
 class CacheTests(TestCase):
     @classmethod
@@ -252,32 +293,6 @@ class CacheTests(TestCase):
         cache.clear()
         response = self.authorized_client.get(reverse('posts:index'))
         self.assertNotEqual(response.content, cache_check)
-
-    def test_follow_unfollow(self):
-        followed_user = User.objects.create_user(username='follower')
-        followed_client = Client()
-        followed_client.force_login(followed_user)
-
-        self.assertEqual(Follow.objects.count(), 0)
-
-        response = followed_client.post(
-            reverse('posts:profile_follow', kwargs={'username': self.user}),
-        )
-        self.assertRedirects(
-            response,
-            reverse('posts:profile', kwargs={'username': self.user})
-        )
-        self.assertEqual(Follow.objects.last().user, followed_user)
-        self.assertEqual(Follow.objects.last().author, self.user)
-
-        response = followed_client.post(
-            reverse('posts:profile_unfollow', kwargs={'username': self.user}),
-        )
-        self.assertRedirects(
-            response,
-            reverse('posts:profile', kwargs={'username': self.user})
-        )
-        self.assertEqual(Follow.objects.count(), 0)
 
 
 class PaginatorViewsTest(TestCase):
